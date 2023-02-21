@@ -10,26 +10,32 @@
 
 
 from pymongo import MongoClient
-
-
-def init_mongo():
-    # only when there never a database and never a table
-    pass
+from datetime import datetime
 
 
 def init_connection():
-    client = MongoClient('mongodb://localhost:27017/')
-    db = client["cngal"]
-    collection = db["cngal.games"]
-    post = {
-        "author": "CNGAL",
-        "text": "My first VN!",
-        "tags": ["mongodb", "python", "pymongo"],
-    }
-    post_id = collection.insert_one(post).inserted_id
-    print(post_id)
-    db.list_collection_names()
-    # if collection name won't valid, call init
+    client = MongoClient("mongodb://localhost:27017/")
+    return client
+
+
+def init_collection(client=None, db_name=None, collection_name=None):
+    if db_name == None and collection_name == None:
+        db = client["cngal"]
+        collection = db["cngal.logs"]
+        post_id = collection.insert_one({"time": str(datetime.now())}).inserted_id
+    else:
+        db = client[db_name]
+        collection = db[collection_name]
+        return collection
+
+
+def insert_entry(entry: dict, collection=None):
+    if entry["type"] == 0:
+        post_id = collection.insert_one(entry).inserted_id
+        print(post_id)
+
+# def debug():
+#     db.list_collection_names()
 
 
 def insert():

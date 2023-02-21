@@ -2,14 +2,14 @@ from pprint import pprint
 
 from src.const import api_endpoint
 from src.network import no_proxy, request_swagger_api
-from src.storage import init_connection
+from src.storage import init_connection, init_collection, insert_entry
 
 
 def init_graph():
     entry_id_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
     pprint(entry_id_list)
     entry_list = []
-    max_limit = 1
+    max_limit = 10
     for entry_meta in entry_id_list:
         id = entry_meta["id"]
         if id <= max_limit:
@@ -17,13 +17,19 @@ def init_graph():
                 "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
             )
             entry_list.append(entry)
-    pprint(entry_list)
+    # pprint(entry_list)
+
+    return entry_list
 
 
 def main():
-    # no_proxy(api_endpoint)
-    # init_graph()
-    init_connection()
+    no_proxy(api_endpoint)
+    entry_list=init_graph()
+    for i in entry_list:
+        client=init_connection()
+        collection=init_collection(client=client,db_name="cngal",collection_name="cngal.name")
+        # insert_entry(entry={"type":0},collection=collection)
+        insert_entry(entry=i,collection=collection)
 
 
 if __name__ == "__main__":
