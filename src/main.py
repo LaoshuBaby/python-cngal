@@ -1,8 +1,6 @@
-from pprint import pprint
-
 from src.const import api_endpoint
 from src.network import no_proxy, request_swagger_api
-from src.storage import init_connection, init_collection, insert_entry
+from src.storage import init_collection, init_connection, insert_entry
 
 
 def type2collection(type: int) -> str:
@@ -39,9 +37,16 @@ def init_graph():
     print(entry_list)
 
 
+def build_graph():
+    # game-maker
+    # game-staff
+    # game-character
+    pass
+
+
 def main():
     no_proxy(api_endpoint)
-    init_graph()
+    # init_graph()
 
 
 if __name__ == "__main__":

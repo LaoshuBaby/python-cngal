@@ -1,7 +1,7 @@
+from datetime import datetime
 from typing import Optional
 
 from pymongo import MongoClient
-from datetime import datetime
 
 
 def init_connection():
@@ -13,7 +13,9 @@ def init_collection(client=None, db_name=None, collection_name=None):
     if db_name == None and collection_name == None:
         db = client["cngal"]
         collection = db["cngal.logs"]
-        post_id = collection.insert_one({"time": str(datetime.now())}).inserted_id
+        post_id = collection.insert_one(
+            {"time": str(datetime.now())}
+        ).inserted_id
     else:
         db = client[db_name]
         collection = db[collection_name]
@@ -21,9 +23,8 @@ def init_collection(client=None, db_name=None, collection_name=None):
 
 
 def insert_entry(entry: dict, collection=None) -> Optional[str]:
-    if entry["type"] == 0:
-        post_id = collection.insert_one(entry).inserted_id
-        return post_id
+    post_id = collection.insert_one(entry).inserted_id
+    return post_id
 
 
 # def debug():

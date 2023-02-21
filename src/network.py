@@ -35,5 +35,7 @@ def request_data_summary(tab="games"):
     pprint(result_json)
 
 
-def request_swagger_api(api_name: str)->dict:
-    return json.loads(requests.get(url=api_endpoint + api_name, headers=headers).text)
+def request_swagger_api(api_name: str) -> dict:
+    return json.loads(
+        requests.get(url=api_endpoint + api_name, headers=headers).text
+    )
