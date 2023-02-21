@@ -9,4 +9,28 @@
 # 3 staff
 
 
-import pymongo
+from pymongo import MongoClient
+
+
+def init_mongo():
+    # only when there never a database and never a table
+    pass
+
+
+def init_connection():
+    client = MongoClient('mongodb://localhost:27017/')
+    db = client["cngal"]
+    collection = db["cngal.games"]
+    post = {
+        "author": "CNGAL",
+        "text": "My first VN!",
+        "tags": ["mongodb", "python", "pymongo"],
+    }
+    post_id = collection.insert_one(post).inserted_id
+    print(post_id)
+    db.list_collection_names()
+    # if collection name won't valid, call init
+
+
+def insert():
+    pass
