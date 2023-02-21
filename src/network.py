@@ -14,7 +14,7 @@ def no_proxy(domain: str) -> None:
     os.environ["NO_PROXY"] = domain
 
 
-def data_summary(tab="games"):
+def request_data_summary(tab="games"):
     if tab == "games":
         url = api_endpoint + "/api/tables/GetBasicInforList"
     elif tab == "group":
@@ -35,8 +35,5 @@ def data_summary(tab="games"):
     pprint(result_json)
 
 
-def data_swagger_api(api_name: str):
-    # if have {id} or other mustache syntax, replace it with kwargs
-    url = api_endpoint + api_name
-    result_json = json.loads(requests.get(url=url, headers=headers).text)
-    print(result_json)
+def request_swagger_api(api_name: str)->dict:
+    return json.loads(requests.get(url=api_endpoint + api_name, headers=headers).text)

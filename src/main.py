@@ -1,15 +1,27 @@
+from pprint import pprint
+
 from src.const import api_endpoint
-from src.network import no_proxy, data_swagger_api
+from src.network import no_proxy, request_swagger_api
+
 
 def init_graph():
-    # get data
-    data_swagger_api("/api/entries/GetAllEntriesIdName")
-    # complete data
-    data_swagger_api("/api/entries/GetEntryView/{id}")
+    entry_id_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
+    pprint(entry_id_list)
+    entry_list = []
+    max_limit = 10
+    for entry_meta in entry_id_list:
+        id = entry_meta["id"]
+        if id <= max_limit:
+            entry = request_swagger_api(
+                "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
+            )
+            entry_list.append(entry)
+    pprint(entry_list)
+
 
 def main():
     no_proxy(api_endpoint)
-
+    init_graph()
 
 
 if __name__ == "__main__":
