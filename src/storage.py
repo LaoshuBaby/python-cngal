@@ -1,13 +1,4 @@
-# init 4 table in mongodb, "games", "staff", "article", "character"
-
-# How to judge? by "type":0/1/2/3 ?
-
-# according to my guess
-# 0 game
-# 1 character
-# 2 maker
-# 3 staff
-
+from typing import Optional
 
 from pymongo import MongoClient
 from datetime import datetime
@@ -29,10 +20,11 @@ def init_collection(client=None, db_name=None, collection_name=None):
         return collection
 
 
-def insert_entry(entry: dict, collection=None):
+def insert_entry(entry: dict, collection=None) -> Optional[str]:
     if entry["type"] == 0:
         post_id = collection.insert_one(entry).inserted_id
-        print(post_id)
+        return post_id
+
 
 # def debug():
 #     db.list_collection_names()
