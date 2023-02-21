@@ -4,10 +4,8 @@ from pprint import pprint
 
 import requests
 
-api_endpoint = "https://api.cngal.org/api/"
-headers={
-    "User-Agent":"python-cngal /technical-preview"
-}
+api_endpoint = "https://api.cngal.org"
+headers = {"User-Agent": "python-cngal /technical-preview"}
 
 
 def no_proxy(domain: str) -> None:
@@ -19,28 +17,35 @@ def no_proxy(domain: str) -> None:
 
 def data_summary(tab="games"):
     if tab == "games":
-        url = api_endpoint + "tables/GetBasicInforList"
+        url = api_endpoint + "/api/tables/GetBasicInforList"
     elif tab == "group":
-        url = api_endpoint + "tables/GetGroupInforList"
+        url = api_endpoint + "/api/tables/GetGroupInforList"
     elif tab == "staff":
-        url = api_endpoint + "tables/GetStaffInforList"
+        url = api_endpoint + "/api/tables/GetStaffInforList"
     elif tab == "maker":
-        url = api_endpoint + "tables/GetMakerInforList"
+        url = api_endpoint + "/api/tables/GetMakerInforList"
     elif tab == "character":
-        url = api_endpoint + "tables/GetRoleInforList"
+        url = api_endpoint + "/api/tables/GetRoleInforList"
     elif tab == "price":
-        url = api_endpoint + "tables/GetSteamInforList"
+        url = api_endpoint + "/api/tables/GetSteamInforList"
     elif tab == "score":
-        url = api_endpoint + "tables/GetGameScoreList"
+        url = api_endpoint + "/api/tables/GetGameScoreList"
     else:
         print("数据汇总就这些分类没有其他的啦！写BUG了吧！")
-    result_json=json.loads(requests.get(url=url,headers=headers).text)
+    result_json = json.loads(requests.get(url=url, headers=headers).text)
     pprint(result_json)
+
+
+def data_swagger_api(api_name: str):
+    url = api_endpoint + api_name
+    result_json = json.loads(requests.get(url=url, headers=headers).text)
+    print(result_json)
 
 
 def main():
     no_proxy(api_endpoint)
-    data_summary("maker")
+    # data_summary("maker")
+    data_swagger_api("/api/entries/GetAllEntriesIdName")
 
 
 if __name__ == "__main__":
