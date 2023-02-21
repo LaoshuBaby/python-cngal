@@ -1,8 +1,13 @@
+import json
 import os
+from pprint import pprint
 
 import requests
 
 api_endpoint = "https://api.cngal.org/api/"
+headers={
+    "User-Agent":"python-cngal /technical-preview"
+}
 
 
 def no_proxy(domain: str) -> None:
@@ -29,11 +34,13 @@ def data_summary(tab="games"):
         url = api_endpoint + "tables/GetGameScoreList"
     else:
         print("数据汇总就这些分类没有其他的啦！写BUG了吧！")
-    pass
+    result_json=json.loads(requests.get(url=url,headers=headers).text)
+    pprint(result_json)
 
 
 def main():
-    pass
+    no_proxy(api_endpoint)
+    data_summary("maker")
 
 
 if __name__ == "__main__":
