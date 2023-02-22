@@ -1,3 +1,5 @@
+from datetime import datetime
+
 from src.const import api_endpoint
 from src.network import no_proxy, request_swagger_api
 from src.storage import init_collection, init_connection, insert_entry
@@ -15,9 +17,7 @@ def type2collection(type: int) -> str:
 
 
 def init_graph():
-    entry_meta_list = request_swagger_api(
-        "/api/entries/GetAllEntriesIdName"
-    )
+    entry_meta_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
     entry_list = {}
 
     def get_data():
@@ -25,19 +25,19 @@ def init_graph():
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
+                # get
                 entry = request_swagger_api(
                     "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
                 )
+                # insert
                 post_id = insert_entry(
                     entry=entry,
-                    collection=init_collection(
-                        client=init_connection(),
-                        db_name="cngal",
-                        collection_name="cngal."
-                        + type2collection(entry["type"]),
-                    ),
+                    db_name="cngal",
+                    collection_name="cngalX." + type2collection(entry["type"]),
                 )
-                entry_list[id] = post_id
+                entry_list[id] = str(post_id)
+                print("id: "+str(id), "post_id: "+str(post_id))
+        insert_entry(entry={"finish": True, "datetime": str(datetime.now())})
 
     def build_graph():
         # game-maker
@@ -59,7 +59,7 @@ def init_graph():
 
 def main():
     no_proxy(api_endpoint)
-    # init_graph()
+    init_graph()
 
 
 if __name__ == "__main__":
