@@ -2,7 +2,7 @@ from datetime import datetime
 
 from src.const import api_endpoint
 from src.network import no_proxy, request_swagger_api
-from src.storage import init_collection, init_connection, insert_entry
+from src.database import init_collection, init_connection, insert_entry
 
 
 def type2collection(type: int) -> str:
@@ -29,6 +29,8 @@ def init_graph():
                 entry = request_swagger_api(
                     "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
                 )
+                # select and judge
+                select_entry(entry=,db_name=,collection_name=)
                 # insert
                 post_id = insert_entry(
                     entry=entry,
@@ -36,7 +38,7 @@ def init_graph():
                     collection_name="cngalX." + type2collection(entry["type"]),
                 )
                 entry_list[id] = str(post_id)
-                print("id: "+str(id), "post_id: "+str(post_id))
+                print("id: " + str(id), "post_id: " + str(post_id))
         insert_entry(entry={"finish": True, "datetime": str(datetime.now())})
 
     def build_graph():
