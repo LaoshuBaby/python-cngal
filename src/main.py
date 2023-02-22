@@ -46,16 +46,13 @@ def init_graph():
                 # select and judge
                 def unify_select_entry(entry: dict, db_name: str):
                     for code in type_code:
-                        print(type_code[code], entry)
                         result = select_entry(
                             entry=entry,
                             db_name=db_name,
                             collection_name="cngal." + type_code[code],
                         )
-                        # print(str(result))
-                        if result != None:
+                        if result != []:
                             return result
-
                 if (
                     result := unify_select_entry(entry={"id": id}, db_name=db_name)
                     is not None

@@ -35,13 +35,14 @@ def insert_entry(
 
 def select_entry(
     entry: dict, collection=None, db_name=None, collection_name=None
-) -> dict:
+) -> Optional[list]:
     if db_name != None and collection_name != None:
         collection = init_collection(
             client=init_connection(), db_name=db_name, collection_name=collection_name
         )
     if collection != None:
         get = collection.find(entry)
-        return get
+        result = [document for document in get]
+        return result
     else:
         return None
