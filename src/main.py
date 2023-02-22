@@ -1,19 +1,19 @@
 from datetime import datetime
 
-from src.const import api_endpoint
+from src.const import api_endpoint, db_name
 from src.network import no_proxy, request_swagger_api
-from src.database import init_collection, init_connection, insert_entry
+from src.database import init_collection, init_connection, insert_entry, select_entry
+
+type_code={
+    0:"game",
+    1:"character",
+    2:"maker",
+    3:"staff"
+}
 
 
 def type2collection(type: int) -> str:
-    if type == 0:
-        return "game"
-    if type == 1:
-        return "character"
-    if type == 2:
-        return "maker"
-    if type == 3:
-        return "staff"
+    return type_code[type]
 
 
 def init_graph():
@@ -21,7 +21,7 @@ def init_graph():
     entry_list = {}
 
     def get_data():
-        max_limit = len(entry_meta_list) + 1
+        max_limit = 20#len(entry_meta_list) + 1
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
@@ -30,16 +30,27 @@ def init_graph():
                     "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
                 )
                 # select and judge
-                select_entry(entry=,db_name=,collection_name=)
-                # insert
-                post_id = insert_entry(
-                    entry=entry,
-                    db_name="cngal",
-                    collection_name="cngalX." + type2collection(entry["type"]),
-                )
-                entry_list[id] = str(post_id)
-                print("id: " + str(id), "post_id: " + str(post_id))
-        insert_entry(entry={"finish": True, "datetime": str(datetime.now())})
+                def unify_select_entry(entry:dict,db_name:str):
+                    for code in type_code:
+                        print(type_code[code], entry)
+                        result=select_entry(entry=entry, db_name=db_name, collection_name="cngal."+type_code[code])
+                        print(str(result))
+                        if result!=None:
+                            return result
+                if result:=unify_select_entry(entry={"id": id},db_name=db_name)!=None:
+                    # judge whether the same data
+                    # if same, skip insert
+                    pass
+                else:
+                    # insert
+                    post_id = insert_entry(
+                        entry=entry,
+                        db_name=db_name,
+                        collection_name="cngal." + type2collection(entry["type"]),
+                    )
+                    entry_list[id] = str(post_id)
+                    print("id: " + str(id), "post_id: " + str(post_id))
+        insert_entry(entry={"finish": True, "datetime": str(datetime.now())},db_name=db_name,collection_name="cngal.config")
 
     def build_graph():
         # game-maker
