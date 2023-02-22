@@ -1,10 +1,10 @@
 import time
 from datetime import datetime
-from typing import Optional, List
+from typing import List, Optional
 
 from src.const import api_endpoint, db_name, type_code
+from src.database import insert_entry, select_entry, update_entry
 from src.network import no_proxy, request_swagger_api
-from src.database import insert_entry, select_entry
 
 
 def type2collection(type: int) -> str:
@@ -14,7 +14,9 @@ def type2collection(type: int) -> str:
 def init_graph():
     def get_entry_meta_list() -> dict:
         time_start = time.time()
-        entry_meta_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
+        entry_meta_list = request_swagger_api(
+            "/api/entries/GetAllEntriesIdName"
+        )
         time_end = time.time()
         print(
             "[TIME.get_entry_meta_list]: {time}s".replace(
@@ -37,13 +39,18 @@ def init_graph():
                     def get_data_fetch() -> dict:
                         time_start = time.time()
                         entry = request_swagger_api(
-                            "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
+                            "/api/entries/GetEntryView/{id}".replace(
+                                "{id}", str(id)
+                            )
                         )
                         time_end = time.time()
                         print(
                             "[TIME.get_entry.{id}]: {time}s".replace(
                                 "{id}", str(id)
-                            ).replace("{time}", str(round((time_end - time_start), 3)))
+                            ).replace(
+                                "{time}",
+                                str(round((time_end - time_start), 3)),
+                            )
                         )
                         return entry
 
@@ -53,7 +60,7 @@ def init_graph():
                     ) -> Optional[List[dict]]:
                         for code in type_code:
                             result = select_entry(
-                                entry=entry,
+                                pattern_entry=entry,
                                 db_name=db_name,
                                 collection_name="cngal." + type_code[code],
                             )
@@ -66,7 +73,8 @@ def init_graph():
                         post_id = insert_entry(
                             entry=entry,
                             db_name=db_name,
-                            collection_name="cngal." + type2collection(entry["type"]),
+                            collection_name="cngal."
+                            + type2collection(entry["type"]),
                         )
                         entry_list[id] = str(post_id)
                         print("id: " + str(id), "post_id: " + str(post_id))
@@ -89,7 +97,6 @@ def init_graph():
                             entry_a: dict, entry_b: dict, ignore_flag: bool
                         ) -> bool:
                             def remove_reader_count(src_dict) -> dict:
-                                print(src_dict)
                                 subdict_array_names = [
                                     "roles",
                                     "entryRelevances",
@@ -97,7 +104,9 @@ def init_graph():
                                 ]
 
                                 def remove_in_subdict(subdict_array_name):
-                                    working_subdict_array = src_dict.get(subdict_array_name)
+                                    working_subdict_array = src_dict.get(
+                                        subdict_array_name
+                                    )
                                     working_subdict_array_removed = []
                                     for subdict in working_subdict_array:
                                         subdict.pop("readerCount")
@@ -112,12 +121,18 @@ def init_graph():
                                     src_dict[name] = return_array
                                 return src_dict
 
-                            entry_a_removed = remove_reader_count(entry_a)
-                            entry_b_removed = remove_reader_count(entry_b)
-                            if entry_a_removed == entry_b_removed:
-                                return True
+                            if ignore_flag == True:
+                                entry_a_removed = remove_reader_count(entry_a)
+                                entry_b_removed = remove_reader_count(entry_b)
+                                if entry_a_removed == entry_b_removed:
+                                    return True
+                                else:
+                                    return False
                             else:
-                                return False
+                                if entry_a == entry_b:
+                                    return True
+                                else:
+                                    return False
 
                         select_result.pop("_id")
                         if is_vital_content_same(
@@ -125,11 +140,17 @@ def init_graph():
                             select_result,
                             flag_ignore_reader_count,
                         ):
-                            print("已有" + str(id) + "无需重复insert")
+                            print("已有未过时的" + str(id) + "无需重复insert")
                             pass
                         else:
                             print("库内" + str(id) + "版本过时，需要insert")
-                            insert(fetch_result)  # 事实上应该update
+                            update_entry(
+                                pattern_entry={"id": id},
+                                content_entry=fetch_result,
+                                db_name=db_name,
+                                collection_name="cngal."
+                                + type2collection(fetch_result["type"]),
+                            )  # 事实上应该update
                     else:
                         print("库内不存在" + str(id) + "条目，需要insert")
                         insert(fetch_result)

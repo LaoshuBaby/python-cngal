@@ -24,7 +24,9 @@ def insert_entry(
 ) -> Optional[str]:
     if db_name != None and collection_name != None:
         collection = init_collection(
-            client=init_connection(), db_name=db_name, collection_name=collection_name
+            client=init_connection(),
+            db_name=db_name,
+            collection_name=collection_name,
         )
     if collection != None:
         post_id = collection.insert_one(entry).inserted_id
@@ -34,15 +36,36 @@ def insert_entry(
 
 
 def select_entry(
-    entry: dict, collection=None, db_name=None, collection_name=None
+    pattern_entry: dict, collection=None, db_name=None, collection_name=None
 ) -> Optional[list]:
     if db_name != None and collection_name != None:
         collection = init_collection(
-            client=init_connection(), db_name=db_name, collection_name=collection_name
+            client=init_connection(),
+            db_name=db_name,
+            collection_name=collection_name,
         )
     if collection != None:
-        get = collection.find(entry)
+        get = collection.find(pattern_entry)
         result = [document for document in get]
         return result
     else:
         return None
+
+
+def update_entry(
+    pattern_entry: dict,
+    content_entry: dict,
+    collection=None,
+    db_name=None,
+    collection_name=None,
+) -> None:
+    if db_name != None and collection_name != None:
+        collection = init_collection(
+            client=init_connection(),
+            db_name=db_name,
+            collection_name=collection_name,
+        )
+    if collection != None:
+        collection.replace_one(pattern_entry, content_entry)
+    else:
+        print("更新不成功")
