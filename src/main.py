@@ -77,18 +77,59 @@ def init_graph():
                     )
 
                     debug = False
+                    flag_ignore_reader_count = True
                     if debug:
                         print(fetch_result)
                         print(select_result)
 
                     if select_result is not None:
-                        select_result=select_result[0]
-                        if select_result.pop("_id") == fetch_result:
+                        select_result = select_result[0]
+
+                        def is_vital_content_same(
+                            entry_a: dict, entry_b: dict, ignore_flag: bool
+                        ) -> bool:
+                            def remove_reader_count(src_dict) -> dict:
+                                print(src_dict)
+                                subdict_array_names = [
+                                    "roles",
+                                    "entryRelevances",
+                                    "articleRelevances",
+                                ]
+
+                                def remove_in_subdict(subdict_array_name):
+                                    working_subdict_array = src_dict.get(subdict_array_name)
+                                    working_subdict_array_removed = []
+                                    for subdict in working_subdict_array:
+                                        subdict.pop("readerCount")
+                                        working_subdict_array_removed.append(
+                                            subdict
+                                        )
+                                    return working_subdict_array_removed
+
+                                for name in subdict_array_names:
+                                    return_array = remove_in_subdict(name)
+                                    src_dict.pop(name)
+                                    src_dict[name] = return_array
+                                return src_dict
+
+                            entry_a_removed = remove_reader_count(entry_a)
+                            entry_b_removed = remove_reader_count(entry_b)
+                            if entry_a_removed == entry_b_removed:
+                                return True
+                            else:
+                                return False
+
+                        select_result.pop("_id")
+                        if is_vital_content_same(
+                            fetch_result,
+                            select_result,
+                            flag_ignore_reader_count,
+                        ):
                             print("已有" + str(id) + "无需重复insert")
                             pass
                         else:
                             print("库内" + str(id) + "版本过时，需要insert")
-                            insert(fetch_result)
+                            insert(fetch_result)  # 事实上应该update
                     else:
                         print("库内不存在" + str(id) + "条目，需要insert")
                         insert(fetch_result)
