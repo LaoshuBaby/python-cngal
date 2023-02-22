@@ -1,15 +1,11 @@
+import time
 from datetime import datetime
 
 from src.const import api_endpoint, db_name
 from src.network import no_proxy, request_swagger_api
 from src.database import init_collection, init_connection, insert_entry, select_entry
 
-type_code={
-    0:"game",
-    1:"character",
-    2:"maker",
-    3:"staff"
-}
+type_code = {0: "game", 1: "character", 2: "maker", 3: "staff"}
 
 
 def type2collection(type: int) -> str:
@@ -17,27 +13,54 @@ def type2collection(type: int) -> str:
 
 
 def init_graph():
-    entry_meta_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
+    def get_entry_meta_list() -> dict:
+        time_start = time.time()
+        entry_meta_list = request_swagger_api("/api/entries/GetAllEntriesIdName")
+        time_end = time.time()
+        print(
+            "[TIME.get_entry_meta_list]: {time}s".replace(
+                "{time}", str(round((time_end - time_start), 3))
+            )
+        )
+        return entry_meta_list
+
+    entry_meta_list = get_entry_meta_list()
     entry_list = {}
 
     def get_data():
-        max_limit = 20#len(entry_meta_list) + 1
+        max_limit = 20  # len(entry_meta_list) + 1
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
                 # get
+                time_start = time.time()
                 entry = request_swagger_api(
                     "/api/entries/GetEntryView/{id}".replace("{id}", str(id))
                 )
+                time_end = time.time()
+                print(
+                    "[TIME.get_entry.{id}]: {time}s".replace("{id}", str(id)).replace(
+                        "{time}", str(round((time_end - time_start), 3))
+                    )
+                )
                 # select and judge
-                def unify_select_entry(entry:dict,db_name:str):
+                def unify_select_entry(entry: dict, db_name: str):
                     for code in type_code:
                         print(type_code[code], entry)
-                        result=select_entry(entry=entry, db_name=db_name, collection_name="cngal."+type_code[code])
-                        print(str(result))
-                        if result!=None:
+                        result = select_entry(
+                            entry=entry,
+                            db_name=db_name,
+                            collection_name="cngal." + type_code[code],
+                        )
+                        # print(str(result))
+                        if result != None:
                             return result
-                if result:=unify_select_entry(entry={"id": id},db_name=db_name)!=None:
+
+                if (
+                    result := unify_select_entry(entry={"id": id}, db_name=db_name)
+                    is not None
+                ):
+                    # print(result)
                     # judge whether the same data
                     # if same, skip insert
                     pass
@@ -50,7 +73,11 @@ def init_graph():
                     )
                     entry_list[id] = str(post_id)
                     print("id: " + str(id), "post_id: " + str(post_id))
-        insert_entry(entry={"finish": True, "datetime": str(datetime.now())},db_name=db_name,collection_name="cngal.config")
+        insert_entry(
+            entry={"finish": True, "datetime": str(datetime.now())},
+            db_name=db_name,
+            collection_name="cngal.config",
+        )
 
     def build_graph():
         # game-maker
