@@ -135,14 +135,13 @@ def init_graph():
                             entry_a_comp = copy.deepcopy(entry_a)
                             entry_b_comp = copy.deepcopy(entry_b)
                             if ignore_flag == True:
-                                entry_b_removed = remove_reader_count(entry_b)
-                                if entry_a_removed == entry_b_removed:
+                                if remove_reader_count(
                                     entry_a_comp
+                                ) == remove_reader_count(entry_b_comp):
                                     return True
                                 else:
                                     return False
                             else:
-                                if entry_a == entry_b:
                                 if entry_a_comp == entry_b_comp:
                                     return True
                                 else:
