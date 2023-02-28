@@ -10,6 +10,18 @@ from src.network import no_proxy, request_swagger_api
 def type2collection(type: int) -> str:
     return type_code[type]
 
+def print_time(fn,id=0):
+    # change id in kwargs later
+    time_start = time.time()
+    fn()
+    time_end = time.time()
+    print(
+        "[TIME.{fn.name}]: {time}s".replace("{fn.name}",fn.__name__).replace(
+            "{time}",
+            str(round((time_end - time_start), 3)),
+        )
+    )
+
 
 def init_graph():
     def get_entry_meta_list() -> dict:
@@ -25,12 +37,11 @@ def init_graph():
         )
         return entry_meta_list
 
-    entry_meta_list = get_entry_meta_list()
-    entry_list = {}
-    flag_detailed_time = False
 
-    def get_entry_data():
-        max_limit = len(entry_meta_list) + 1
+
+
+    # @print_time
+    def get_entry_data(entry_meta_list,max_limit):
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
@@ -45,6 +56,7 @@ def init_graph():
                             )
                         )
                         time_end = time.time()
+                        flag_detailed_time = False
                         if flag_detailed_time == True:
                             print(
                                 "[TIME.get_entry.{id}]: {time}s".replace(
@@ -78,8 +90,6 @@ def init_graph():
                             collection_name="cngal."
                             + type2collection(entry["type"]),
                         )
-                        entry_list[id] = str(post_id)
-                        print("id: " + str(id), "post_id: " + str(post_id))
 
                     fetch_result = get_data_fetch()
                     select_result = unify_select_entry(
@@ -194,7 +204,7 @@ def init_graph():
             collection_name="cngal.config",
         )
 
-    def build_graph():
+    def build_graph(entry_meta_list):
         # game-maker
         # game-staff
         # game-character
@@ -206,8 +216,6 @@ def init_graph():
             # append entry_list[id] (contain name)
         pass
 
-    # if cngal.config haven't got a is_finish==True, that we need to get_entry_data
-    # do we need to select and compare before insert? if have different? delete old one or drop memory one?
     finish_signal = bool(
         len(
             select_entry(
@@ -217,18 +225,12 @@ def init_graph():
             )
         )
     )
-    time_start = time.time()
+
+    entry_meta_list = get_entry_meta_list()
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
-        get_entry_data()
-    time_end = time.time()
-    print(
-        "[TIME.get_entry_data]: {time}s".replace(
-            "{time}",
-            str(round((time_end - time_start), 3)),
-        )
-    )
-    build_graph()
+        get_entry_data(entry_meta_list,3)#len(entry_meta_list) + 1
+    build_graph(entry_meta_list)
 
 
 def main():
