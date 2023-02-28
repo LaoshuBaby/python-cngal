@@ -27,9 +27,10 @@ def init_graph():
 
     entry_meta_list = get_entry_meta_list()
     entry_list = {}
+    flag_detailed_time = False
 
     def get_entry_data():
-        max_limit = 3  # len(entry_meta_list) + 1
+        max_limit = len(entry_meta_list) + 1
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
@@ -44,14 +45,15 @@ def init_graph():
                             )
                         )
                         time_end = time.time()
-                        print(
-                            "[TIME.get_entry.{id}]: {time}s".replace(
-                                "{id}", str(id)
-                            ).replace(
-                                "{time}",
-                                str(round((time_end - time_start), 3)),
+                        if flag_detailed_time == True:
+                            print(
+                                "[TIME.get_entry.{id}]: {time}s".replace(
+                                    "{id}", str(id)
+                                ).replace(
+                                    "{time}",
+                                    str(round((time_end - time_start), 3)),
+                                )
                             )
-                        )
                         return entry
 
                     # select and judge
@@ -206,7 +208,26 @@ def init_graph():
 
     # if cngal.config haven't got a is_finish==True, that we need to get_entry_data
     # do we need to select and compare before insert? if have different? delete old one or drop memory one?
-    get_entry_data()
+    finish_signal = bool(
+        len(
+            select_entry(
+                pattern_entry={"finish": True},
+                db_name=db_name,
+                collection_name="cngal.config",
+            )
+        )
+    )
+    time_start = time.time()
+    if not finish_signal:
+        print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
+        get_entry_data()
+    time_end = time.time()
+    print(
+        "[TIME.get_entry_data]: {time}s".replace(
+            "{time}",
+            str(round((time_end - time_start), 3)),
+        )
+    )
     build_graph()
 
 
