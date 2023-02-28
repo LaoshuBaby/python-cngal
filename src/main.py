@@ -109,7 +109,8 @@ def init_graph():
                                     )
                                     working_subdict_array_removed = []
                                     for subdict in working_subdict_array:
-                                        subdict.pop("readerCount")
+                                        if subdict.get("readerCount")!=None:
+                                            subdict.pop("readerCount")
                                         working_subdict_array_removed.append(
                                             subdict
                                         )
