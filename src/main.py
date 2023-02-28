@@ -29,7 +29,7 @@ def init_graph():
     entry_list = {}
 
     def get_entry_data():
-        max_limit = 10  # len(entry_meta_list) + 1
+        max_limit = 3  # len(entry_meta_list) + 1
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
@@ -85,13 +85,22 @@ def init_graph():
                     )
 
                     debug = False
-                    flag_ignore_reader_count = True
+
                     if debug:
                         print(fetch_result)
                         print(select_result)
 
                     if select_result is not None:
                         select_result = select_result[0]
+                        flag_ignore_reader_count = True
+
+                        def is_vital_version_same(
+                            entry_a_timestamp: str, entry_b_timestamp: str
+                        ) -> bool:
+                            if entry_a_timestamp == entry_b_timestamp:
+                                return True
+                            else:
+                                return False
 
                         def is_vital_content_same(
                             entry_a: dict, entry_b: dict, ignore_flag: bool
@@ -109,7 +118,7 @@ def init_graph():
                                     )
                                     working_subdict_array_removed = []
                                     for subdict in working_subdict_array:
-                                        if subdict.get("readerCount")!=None:
+                                        if subdict.get("readerCount") != None:
                                             subdict.pop("readerCount")
                                         working_subdict_array_removed.append(
                                             subdict
@@ -122,15 +131,19 @@ def init_graph():
                                     src_dict[name] = return_array
                                 return src_dict
 
+                            import copy
+                            entry_a_comp = copy.deepcopy(entry_a)
+                            entry_b_comp = copy.deepcopy(entry_b)
                             if ignore_flag == True:
-                                entry_a_removed = remove_reader_count(entry_a)
                                 entry_b_removed = remove_reader_count(entry_b)
                                 if entry_a_removed == entry_b_removed:
+                                    entry_a_comp
                                     return True
                                 else:
                                     return False
                             else:
                                 if entry_a == entry_b:
+                                if entry_a_comp == entry_b_comp:
                                     return True
                                 else:
                                     return False
@@ -140,7 +153,7 @@ def init_graph():
                             fetch_result,
                             select_result,
                             flag_ignore_reader_count,
-                        ):
+                        ) and is_vital_version_same("", ""):
                             print("已有未过时的" + str(id) + "无需重复insert")
                             pass
                         else:
