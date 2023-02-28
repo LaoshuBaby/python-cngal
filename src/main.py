@@ -131,18 +131,19 @@ def init_graph():
                                     src_dict[name] = return_array
                                 return src_dict
 
-                            import copy
-                            entry_a_comp = copy.deepcopy(entry_a)
-                            entry_b_comp = copy.deepcopy(entry_b)
                             if ignore_flag == True:
+                                import copy
+
                                 if remove_reader_count(
-                                    entry_a_comp
-                                ) == remove_reader_count(entry_b_comp):
+                                    copy.deepcopy(entry_a)
+                                ) == remove_reader_count(
+                                    copy.deepcopy(entry_b)
+                                ):
                                     return True
                                 else:
                                     return False
                             else:
-                                if entry_a_comp == entry_b_comp:
+                                if entry_a == entry_b:
                                     return True
                                 else:
                                     return False
@@ -171,7 +172,22 @@ def init_graph():
                 maintain(id)
         # finish signal
         insert_entry(
-            entry={"finish": True, "datetime": str(datetime.now())},
+            entry={
+                "finish": True,
+                "datetime": str(datetime.now()),
+                "len": sum(
+                    [
+                        len(
+                            select_entry(
+                                pattern_entry={},
+                                db_name=db_name,
+                                collection_name="cngal." + type2collection(i),
+                            )
+                        )
+                        for i in range(4)
+                    ]
+                ),
+            },
             db_name=db_name,
             collection_name="cngal.config",
         )
