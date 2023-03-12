@@ -1,3 +1,4 @@
+import os
 import time
 from datetime import datetime
 
@@ -261,43 +262,69 @@ def init_graph():
     return build_graph(entry_meta_list)  # 缺点：不能联网就不能建图，最好改进cngal.config里缓存一份
 
 
+# def vis_graph(G):
+#     # 创建绘图对象
+#     fig, ax = plt.subplots(figsize=(10, 10))
+#
+#     # 绘制有向图
+#
+#     def monkey_patching_timed_draw_networkx(*args, **kwargs):
+#         time_start = time.time()
+#         result = nx.draw_networkx(*args, **kwargs)  # 调用被替换的函数
+#         time_end = time.time()
+#         execution_time = time_end - time_start
+#         message = "[TIME.{fn_name}]: {duration}s".replace(
+#             "{fn_name}", "nx.draw_networkx"
+#         ).replace("{duration}", str(round((execution_time), 3)))
+#         print(message)
+#         return result
+#
+#     # 替换原始函数并应用计时装饰器
+#     nx_draw_networkx = nx.draw_networkx
+#     nx_draw_networkx = monkey_patching_timed_draw_networkx
+#
+#     nx_draw_networkx(
+#         G=G,
+#         pos=nx.nx_pydot.graphviz_layout(G),
+#         arrowsize=16,
+#         node_size=800,
+#         node_color="#8c564b",
+#         with_labels=True,
+#         font_size=14,
+#         font_color="white",
+#         alpha=0.9,
+#         linewidths=0,
+#         ax=ax,
+#     )
+#
+#     ax.set_axis_off()
+#     plt.show()
+
+
 def vis_graph(G):
-    # 创建绘图对象
-    fig, ax = plt.subplots(figsize=(10, 10))
+    import graphviz
 
-    # 绘制有向图
+    # 创建有向图对象
+    dot = graphviz.Digraph()
 
-    def monkey_patching_timed_draw_networkx(*args, **kwargs):
-        time_start = time.time()
-        result = nx.draw_networkx(*args, **kwargs)  # 调用被替换的函数
-        time_end = time.time()
-        execution_time = time_end - time_start
-        message = "[TIME.{fn_name}]: {duration}s".replace(
-            "{fn_name}", "nx.draw_networkx"
-        ).replace("{duration}", str(round((execution_time), 3)))
-        print(message)
-        return result
+    # 添加节点和边
+    for u, v in G.edges:
+        dot.edge(str(u), str(v))
 
-    # 替换原始函数并应用计时装饰器
-    nx_draw_networkx = nx.draw_networkx
-    nx_draw_networkx = monkey_patching_timed_draw_networkx
+    # 设置节点属性
+    for node in G.nodes:
+        dot.node(
+            str(node),
+            shape="circle",
+            style="filled",
+            color="#8c564b",
+            fontcolor="white",
+            fontsize="14",
+        )
 
-    nx_draw_networkx(
-        G=G,
-        pos=nx.nx_pydot.graphviz_layout(G),
-        arrowsize=16,
-        node_size=800,
-        node_color="#8c564b",
-        with_labels=True,
-        font_size=14,
-        font_color="white",
-        alpha=0.9,
-        linewidths=0,
-        ax=ax,
-    )
-
-    ax.set_axis_off()
-    plt.show()
+    # 显示有向图
+    dot.render(filename="cngal.png", directory=os.getcwd(), view=True)
+    return dot
 
 
 def main():
