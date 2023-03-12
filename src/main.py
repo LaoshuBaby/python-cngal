@@ -1,15 +1,24 @@
 import time
 from datetime import datetime
+
+import matplotlib.pyplot as plt
 import networkx as nx
 
 from src.const import api_endpoint, db_name, type_code
-from src.database import insert_entry, select_entry, update_entry, init_collection, init_connection, unify_select_entry
+from src.database import (
+    init_collection,
+    init_connection,
+    insert_entry,
+    select_entry,
+    unify_select_entry,
+    update_entry,
+)
 from src.network import no_proxy, request_swagger_api
 
-import matplotlib.pyplot as plt
 
 def type2collection(type: int) -> str:
     return type_code[type]
+
 
 def print_time(fn):
     def wrapper(*args, **kwargs):
@@ -21,6 +30,7 @@ def print_time(fn):
         ).replace("{duration}", str(round((time_end - time_start), 3)))
         print(message)
         return result
+
     return wrapper
 
 
@@ -29,7 +39,7 @@ def init_graph():
     def get_entry_meta_list() -> dict:
         return request_swagger_api("/api/entries/GetAllEntriesIdName")
 
-    def get_entry_data(entry_meta_list,max_limit):
+    def get_entry_data(entry_meta_list, max_limit):
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
@@ -182,21 +192,23 @@ def init_graph():
     @print_time
     def build_graph(entry_meta_list):
         G = nx.DiGraph()
-        count=0
-        count_limit=10
+        count = 0
+        count_limit = 50
         for i in range(len(entry_meta_list)):
-            node_id=entry_meta_list[i]["id"]
+            node_id = entry_meta_list[i]["id"]
             G.add_node(node_id)
-            node=unify_select_entry(
-                entry={"id":node_id},db_name=db_name
-            )[0]
-            G.add_node(str(node["id"]))
+            node = unify_select_entry(entry={"id": node_id}, db_name=db_name)[
+                0
+            ]
 
             # 判断是否需要添加边
-            if "productionGroups" in node and isinstance(node["productionGroups"], list):
+            if "productionGroups" in node and isinstance(
+                node["productionGroups"], list
+            ):
                 for group in node["productionGroups"]:
                     if isinstance(group, dict) and "id" in group:
                         target_id = str(group["id"])
+                        # G.add_edge(str(node["id"]), target_id, {"type": "productionGroups"})
                         G.add_edge(str(node["id"]), target_id)
             if count % 100 == 0:
                 print("导入已进行到" + str(node["id"]))
@@ -219,8 +231,9 @@ def init_graph():
     entry_meta_list = get_entry_meta_list()
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
-        get_entry_data(entry_meta_list,len(entry_meta_list) + 1)
-    return build_graph(entry_meta_list)
+        get_entry_data(entry_meta_list, len(entry_meta_list) + 1)
+    return build_graph(entry_meta_list) # 缺点：不能联网就不能建图，最好改进cngal.config里缓存一份
+
 
 def vis_graph(G):
     # 创建绘图对象
@@ -247,7 +260,7 @@ def vis_graph(G):
 
 def main():
     no_proxy(api_endpoint)
-    G=init_graph()
+    G = init_graph()
     vis_graph(G)
 
 

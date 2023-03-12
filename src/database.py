@@ -1,4 +1,4 @@
-from typing import Optional, List
+from typing import List, Optional
 
 from pymongo import MongoClient
 
@@ -73,9 +73,7 @@ def update_entry(
         print("更新不成功")
 
 
-def unify_select_entry(
-    entry: dict, db_name: str
-) -> Optional[List[dict]]:
+def unify_select_entry(entry: dict, db_name: str) -> Optional[List[dict]]:
     for code in type_code:
         result = select_entry(
             pattern_entry=entry,
