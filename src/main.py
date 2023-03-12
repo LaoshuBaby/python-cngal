@@ -10,42 +10,30 @@ from src.network import no_proxy, request_swagger_api
 def type2collection(type: int) -> str:
     return type_code[type]
 
-def print_time(fn,id=0):
-    # change id in kwargs later
-    time_start = time.time()
-    fn()
-    time_end = time.time()
-    print(
-        "[TIME.{fn.name}]: {time}s".replace("{fn.name}",fn.__name__).replace(
-            "{time}",
-            str(round((time_end - time_start), 3)),
-        )
-    )
+def print_time(fn):
+    def wrapper(*args, **kwargs):
+        time_start = time.time()
+        result = fn(*args, **kwargs)
+        time_end = time.time()
+        message = "[TIME.{fn_name}]: {duration}s".replace(
+            "{fn_name}", fn.__name__
+        ).replace("{duration}", str(round((time_end - time_start), 3)))
+        print(message)
+        return result
+    return wrapper
 
 
 def init_graph():
+    @print_time
     def get_entry_meta_list() -> dict:
-        time_start = time.time()
-        entry_meta_list = request_swagger_api(
-            "/api/entries/GetAllEntriesIdName"
-        )
-        time_end = time.time()
-        print(
-            "[TIME.get_entry_meta_list]: {time}s".replace(
-                "{time}", str(round((time_end - time_start), 3))
-            )
-        )
-        return entry_meta_list
+        return request_swagger_api("/api/entries/GetAllEntriesIdName")
 
-
-
-
-    # @print_time
     def get_entry_data(entry_meta_list,max_limit):
         for entry_meta in entry_meta_list:
             id = entry_meta["id"]
             if id <= max_limit:
 
+                @print_time
                 def maintain(id):
                     # fetch
                     def get_data_fetch() -> dict:
@@ -204,6 +192,7 @@ def init_graph():
             collection_name="cngal.config",
         )
 
+    @print_time
     def build_graph(entry_meta_list):
         # game-maker
         # game-staff
@@ -229,7 +218,7 @@ def init_graph():
     entry_meta_list = get_entry_meta_list()
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
-        get_entry_data(entry_meta_list,3)#len(entry_meta_list) + 1
+        get_entry_data(entry_meta_list,len(entry_meta_list) + 1)
     build_graph(entry_meta_list)
 
 
