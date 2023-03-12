@@ -193,27 +193,54 @@ def init_graph():
     def build_graph(entry_meta_list):
         G = nx.DiGraph()
         count = 0
-        count_limit = 50
-        for i in range(len(entry_meta_list)):
-            node_id = entry_meta_list[i]["id"]
-            node = unify_select_entry(entry={"id": node_id}, db_name=db_name)[
-                0
-            ]
-            G.add_node(node_id)  # node(type is dict) is unhashable
+        count_limit = 300
+        flag_count_limit_valid = True
 
-            # 判断是否需要添加边
-            if "productionGroups" in node and isinstance(
-                node["productionGroups"], list
-            ):
-                for group in node["productionGroups"]:
-                    if isinstance(group, dict) and "id" in group:
-                        target_id = str(group["id"])
-                        G.add_edge(str(node["id"]), target_id)
-            if count + 1 % 100 == 0:
-                print("导入已进行到" + str(count + 1) + "个")
-            count += 1
-            if count >= count_limit:
-                break
+        # for i in range(len(entry_meta_list)):
+        #     node_id = entry_meta_list[i]["id"]
+        #     node = unify_select_entry(entry={"id": node_id}, db_name=db_name)[
+        #         0
+        #     ]
+        #     G.add_node(node_id)  # node(type is dict) is unhashable
+        #
+        #     # 判断是否需要添加边
+        #     if "productionGroups" in node and isinstance(
+        #         node["productionGroups"], list
+        #     ):
+        #         for group in node["productionGroups"]:
+        #             if isinstance(group, dict) and "id" in group:
+        #                 target_id = str(group["id"])
+        #                 G.add_edge(str(node["id"]), target_id)
+        #     if (count + 1 % 10) == 0:
+        #         print("导入已进行到" + str(count + 1) + "个")
+        #     count += 1
+        #     if count >= count_limit and flag_count_limit_valid==True:
+        #         break
+
+        for code in type_code:
+            collection_name = "cngal." + type2collection(code)
+            collection = init_collection(
+                client=init_connection(),
+                db_name=db_name,
+                collection_name=collection_name,
+            )
+            print("loaded: " + collection_name)
+            for doc in collection.find():
+                G.add_node(str(doc["id"]))
+
+                # 判断是否需要添加边
+                if "productionGroups" in doc and isinstance(
+                    doc["productionGroups"], list
+                ):
+                    for group in doc["productionGroups"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(doc["id"]), target_id)
+                if (count + 1 % 10) == 0:
+                    print("导入已进行到" + str(count + 1) + "个")
+                count += 1
+                if count >= count_limit and flag_count_limit_valid == True:
+                    break
 
         return G
 
