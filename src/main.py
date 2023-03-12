@@ -1,6 +1,7 @@
 import time
 from datetime import datetime
 from typing import List, Optional
+import networkx as nx
 
 from src.const import api_endpoint, db_name, type_code
 from src.database import insert_entry, select_entry, update_entry
@@ -194,16 +195,24 @@ def init_graph():
 
     @print_time
     def build_graph(entry_meta_list):
-        # game-maker
-        # game-staff
-        # game-character
-        import networkx as nx
-
-        G = nx.Graph()
-        for i in range(len(entry_meta_list)):
-            G.add_node(entry_meta_list[i]["id"])
-            # append entry_list[id] (contain name)
-        pass
+        G = nx.DiGraph()
+        for code in type_code:
+            collection_name="cngal."+type2collection(code)
+            print(collection_name)
+            collection = init_collection(
+                client=init_connection(),
+                db_name=db_name,
+                collection_name=collection_name,
+            )
+            for doc in collection.find():
+                G.add_node(str(doc["_id"]))
+    
+                # 判断是否需要添加边
+                if "productionGroups" in doc and isinstance(doc["productionGroups"], list):
+                    for group in doc["productionGroups"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(doc["_id"]), target_id)
 
     finish_signal = bool(
         len(
