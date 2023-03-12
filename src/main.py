@@ -184,28 +184,25 @@ def init_graph():
         G = nx.DiGraph()
         count=0
         count_limit=10
-        for code in type_code:
-            collection_name="cngal."+type2collection(code)
-            print(collection_name)
-            collection = init_collection(
-                client=init_connection(),
-                db_name=db_name,
-                collection_name=collection_name,
-            )
-            for doc in collection.find():
-                G.add_node(str(doc["id"]))
+        for i in range(len(entry_meta_list)):
+            node_id=entry_meta_list[i]["id"]
+            G.add_node(node_id)
+            node=unify_select_entry(
+                entry={"id":node_id},db_name=db_name
+            )[0]
+            G.add_node(str(node["id"]))
 
-                # 判断是否需要添加边
-                if "productionGroups" in doc and isinstance(doc["productionGroups"], list):
-                    for group in doc["productionGroups"]:
-                        if isinstance(group, dict) and "id" in group:
-                            target_id = str(group["id"])
-                            G.add_edge(str(doc["id"]), target_id)
-                if count%100==0:
-                        print("导入已进行到"+str(doc["id"]))
-                count+=1
-                if count>=count_limit:
-                    break
+            # 判断是否需要添加边
+            if "productionGroups" in node and isinstance(node["productionGroups"], list):
+                for group in node["productionGroups"]:
+                    if isinstance(group, dict) and "id" in group:
+                        target_id = str(group["id"])
+                        G.add_edge(str(node["id"]), target_id)
+            if count % 100 == 0:
+                print("导入已进行到" + str(node["id"]))
+            count += 1
+            if count >= count_limit:
+                break
 
         return G
 
