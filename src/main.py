@@ -196,10 +196,10 @@ def init_graph():
         count_limit = 50
         for i in range(len(entry_meta_list)):
             node_id = entry_meta_list[i]["id"]
-            G.add_node(node_id)
             node = unify_select_entry(entry={"id": node_id}, db_name=db_name)[
                 0
             ]
+            G.add_node(node_id)  # node(type is dict) is unhashable
 
             # 判断是否需要添加边
             if "productionGroups" in node and isinstance(
@@ -208,10 +208,9 @@ def init_graph():
                 for group in node["productionGroups"]:
                     if isinstance(group, dict) and "id" in group:
                         target_id = str(group["id"])
-                        # G.add_edge(str(node["id"]), target_id, {"type": "productionGroups"})
                         G.add_edge(str(node["id"]), target_id)
-            if count % 100 == 0:
-                print("导入已进行到" + str(node["id"]))
+            if count + 1 % 100 == 0:
+                print("导入已进行到" + str(count + 1) + "个")
             count += 1
             if count >= count_limit:
                 break
@@ -232,7 +231,7 @@ def init_graph():
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
         get_entry_data(entry_meta_list, len(entry_meta_list) + 1)
-    return build_graph(entry_meta_list) # 缺点：不能联网就不能建图，最好改进cngal.config里缓存一份
+    return build_graph(entry_meta_list)  # 缺点：不能联网就不能建图，最好改进cngal.config里缓存一份
 
 
 def vis_graph(G):
@@ -240,8 +239,24 @@ def vis_graph(G):
     fig, ax = plt.subplots(figsize=(10, 10))
 
     # 绘制有向图
-    nx.draw_networkx(
-        G,
+
+    def monkey_patching_timed_draw_networkx(*args, **kwargs):
+        time_start = time.time()
+        result = nx.draw_networkx(*args, **kwargs)  # 调用被替换的函数
+        time_end = time.time()
+        execution_time = time_end - time_start
+        message = "[TIME.{fn_name}]: {duration}s".replace(
+            "{fn_name}", "nx.draw_networkx"
+        ).replace("{duration}", str(round((execution_time), 3)))
+        print(message)
+        return result
+
+    # 替换原始函数并应用计时装饰器
+    nx_draw_networkx = nx.draw_networkx
+    nx_draw_networkx = monkey_patching_timed_draw_networkx
+
+    nx_draw_networkx(
+        G=G,
         pos=nx.kamada_kawai_layout(G),
         arrowsize=16,
         node_size=800,
