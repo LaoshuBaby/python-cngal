@@ -7,6 +7,7 @@ from src.const import api_endpoint, db_name, type_code
 from src.database import insert_entry, select_entry, update_entry
 from src.network import no_proxy, request_swagger_api
 
+import matplotlib.pyplot as plt
 
 def type2collection(type: int) -> str:
     return type_code[type]
@@ -206,13 +207,14 @@ def init_graph():
             )
             for doc in collection.find():
                 G.add_node(str(doc["_id"]))
-    
+
                 # 判断是否需要添加边
                 if "productionGroups" in doc and isinstance(doc["productionGroups"], list):
                     for group in doc["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
                             G.add_edge(str(doc["_id"]), target_id)
+        return G
 
     finish_signal = bool(
         len(
@@ -228,12 +230,35 @@ def init_graph():
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
         get_entry_data(entry_meta_list,len(entry_meta_list) + 1)
-    build_graph(entry_meta_list)
+    return build_graph(entry_meta_list)
+
+def vis_graph(G):
+    # 创建绘图对象
+    fig, ax = plt.subplots(figsize=(10, 10))
+
+    # 绘制有向图
+    nx.draw_networkx(
+        G,
+        pos=nx.kamada_kawai_layout(G),
+        arrowsize=16,
+        node_size=800,
+        node_color="#8c564b",
+        with_labels=True,
+        font_size=14,
+        font_color="white",
+        alpha=0.9,
+        linewidths=0,
+        ax=ax,
+    )
+
+    ax.set_axis_off()
+    plt.show()
 
 
 def main():
     no_proxy(api_endpoint)
-    init_graph()
+    G=init_graph()
+    vis_graph(G)
 
 
 if __name__ == "__main__":
