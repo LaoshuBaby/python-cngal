@@ -229,7 +229,7 @@ def init_graph():
             for doc in collection.find():
                 G.add_node(str(doc["id"]))
 
-                # 判断是否需要添加边
+                # productionGroups- 判断是否需要添加边
                 if "productionGroups" in doc and isinstance(
                     doc["productionGroups"], list
                 ):
@@ -237,6 +237,26 @@ def init_graph():
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
                             G.add_edge(str(doc["id"]), target_id)
+
+                # publishers
+                if "publishers" in doc and isinstance(
+                    doc["publishers"], list
+                ):
+                    for group in doc["publishers"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(doc["id"]), target_id)
+
+                # publishers
+                if "roles" in doc and isinstance(
+                    doc["roles"], list
+                ):
+                    for group in doc["roles"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(doc["id"]), target_id)
+
+                # shutdown
                 if (count + 1) % 500 == 0:
                     print("导入已进行到" + str(count + 1) + "个")
                 count += 1
@@ -305,7 +325,7 @@ def vis_graph(G):
     import graphviz
 
     # 创建有向图对象
-    dot = graphviz.Digraph()
+    dot = graphviz.Digraph(engine="neato")
 
     # 添加节点和边
     for u, v in G.edges:
@@ -323,7 +343,7 @@ def vis_graph(G):
         )
 
     # 显示有向图
-    dot.render(filename="cngal.png", directory=os.getcwd(), view=True)
+    dot.render(filename="cngal.dot", directory=os.getcwd(), view=True)
     return dot
 
 
