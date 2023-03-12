@@ -193,8 +193,8 @@ def init_graph():
     def build_graph(entry_meta_list):
         G = nx.DiGraph()
         count = 0
-        count_limit = 300
-        flag_count_limit_valid = True
+        count_limit = 500
+        flag_count_limit_valid = False
 
         # for i in range(len(entry_meta_list)):
         #     node_id = entry_meta_list[i]["id"]
@@ -236,7 +236,7 @@ def init_graph():
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
                             G.add_edge(str(doc["id"]), target_id)
-                if (count + 1 % 10) == 0:
+                if (count + 1) % 500 == 0:
                     print("导入已进行到" + str(count + 1) + "个")
                 count += 1
                 if count >= count_limit and flag_count_limit_valid == True:
@@ -284,7 +284,7 @@ def vis_graph(G):
 
     nx_draw_networkx(
         G=G,
-        pos=nx.kamada_kawai_layout(G),
+        pos=nx.nx_pydot.graphviz_layout(G),
         arrowsize=16,
         node_size=800,
         node_color="#8c564b",
