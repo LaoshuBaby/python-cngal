@@ -1,10 +1,9 @@
 import time
 from datetime import datetime
-from typing import List, Optional
 import networkx as nx
 
 from src.const import api_endpoint, db_name, type_code
-from src.database import insert_entry, select_entry, update_entry
+from src.database import insert_entry, select_entry, update_entry, init_collection, init_connection, unify_select_entry
 from src.network import no_proxy, request_swagger_api
 
 import matplotlib.pyplot as plt
@@ -57,20 +56,6 @@ def init_graph():
                                 )
                             )
                         return entry
-
-                    # select and judge
-                    def unify_select_entry(
-                        entry: dict, db_name: str
-                    ) -> Optional[List[dict]]:
-                        for code in type_code:
-                            result = select_entry(
-                                pattern_entry=entry,
-                                db_name=db_name,
-                                collection_name="cngal." + type_code[code],
-                            )
-                            if result != []:
-                                return result
-                        return None
 
                     # insert
                     def insert(entry):
@@ -197,6 +182,8 @@ def init_graph():
     @print_time
     def build_graph(entry_meta_list):
         G = nx.DiGraph()
+        count=0
+        count_limit=10
         for code in type_code:
             collection_name="cngal."+type2collection(code)
             print(collection_name)
@@ -206,14 +193,20 @@ def init_graph():
                 collection_name=collection_name,
             )
             for doc in collection.find():
-                G.add_node(str(doc["_id"]))
+                G.add_node(str(doc["id"]))
 
                 # 判断是否需要添加边
                 if "productionGroups" in doc and isinstance(doc["productionGroups"], list):
                     for group in doc["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(doc["_id"]), target_id)
+                            G.add_edge(str(doc["id"]), target_id)
+                if count%100==0:
+                        print("导入已进行到"+str(doc["id"]))
+                count+=1
+                if count>=count_limit:
+                    break
+
         return G
 
     finish_signal = bool(

@@ -1,6 +1,8 @@
-from typing import Optional
+from typing import Optional, List
 
 from pymongo import MongoClient
+
+from src.const import type_code
 
 
 def init_connection():
@@ -69,3 +71,17 @@ def update_entry(
         collection.replace_one(pattern_entry, content_entry)
     else:
         print("更新不成功")
+
+
+def unify_select_entry(
+    entry: dict, db_name: str
+) -> Optional[List[dict]]:
+    for code in type_code:
+        result = select_entry(
+            pattern_entry=entry,
+            db_name=db_name,
+            collection_name="cngal." + type_code[code],
+        )
+        if result != []:
+            return result
+    return None
