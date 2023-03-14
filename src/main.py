@@ -196,7 +196,7 @@ def init_graph():
         count = 0
         count_limit = 500
         flag_count_limit_valid = False
-        count_zero_node=0
+        void_entities=[]
 
         for code in type_code:
             collection_name = "cngal." + type2collection(code)
@@ -213,10 +213,10 @@ def init_graph():
 
                 # add edge function
                 def add_edge(src,dst,*args, **kwargs):
-                    G.add_edge(src, dst)
-                    if src=="0" or src==0 or dst=="0" or dst==0:
-                        # count_zero_node+=1
-                        print(src, dst, "Create Zero Node",str(kwargs))
+                    if dst=="0":
+                        void_entities.append([src, dst, kwargs])
+                    else:
+                        G.add_edge(src, dst)
 
 
                 # productionGroups
@@ -226,7 +226,7 @@ def init_graph():
                     for group in node["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,tree="productionGroups")
+                            add_edge(str(node["id"]), target_id,key="productionGroups",collection=collection_name)
 
                 # publishers
                 if "publishers" in node and isinstance(
@@ -235,7 +235,7 @@ def init_graph():
                     for group in node["publishers"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,tree="publishers")
+                            add_edge(str(node["id"]), target_id,key="publishers",collection=collection_name)
 
                 # roles
                 if "roles" in node and isinstance(
@@ -244,7 +244,7 @@ def init_graph():
                     for group in node["roles"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,"roles")
+                            add_edge(str(node["id"]), target_id,key="roles",collection=collection_name)
 
                 # entryRelevances
                 if "entryRelevances" in node and isinstance(
@@ -253,7 +253,7 @@ def init_graph():
                     for group in node["entryRelevances"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,tree="entryRelevances")
+                            add_edge(str(node["id"]), target_id,key="entryRelevances",collection=collection_name)
 
                 # staffs
                 if "staffs" in node and isinstance(node["staffs"], list):
@@ -268,7 +268,7 @@ def init_graph():
                                     for name in item["names"]:
                                         if isinstance(name, dict) and "id" in name:
                                             target_id = str(name["id"])
-                                            add_edge(str(node["id"]), target_id,tree="staffs")
+                                            add_edge(str(node["id"]), target_id,key="staffs",collection=collection_name)
 
                 # shutdown
                 if (count + 1) % 500 == 0:
@@ -277,7 +277,7 @@ def init_graph():
                 if count >= count_limit and flag_count_limit_valid == True:
                     break
 
-        print(count_zero_node)
+        # print(void_entities)
         return G
 
     finish_signal = bool(
@@ -370,15 +370,25 @@ def missing_id_detect(G):
             y.append(i)
     return len(x),len(y),min(x),max(x),y
 
-# def remove_isolated_nodes(G):
+def remove_isolated_nodes(G):
+    isolated_nodes = list(nx.isolates(G))
+    for node in isolated_nodes:
+        G.remove_node(node)
+    return G
+
 
 def main():
     no_proxy(api_endpoint)
     G = init_graph()
-    print(missing_id_detect(G))
-
-
-    exit(0)
+    # graph_hist=nx.degree_histogram(G)
+    # in_degrees = nx.in_degree_centrality(G)
+    # out_degrees = nx.out_degree_centrality(G)
+    # print(graph_hist)
+    # print(in_degrees)
+    # print(out_degrees)
+    G=remove_isolated_nodes(G)
+    # exit(0)
+    # print(missing_id_detect(G))
     vis_graph(G)
 
 
