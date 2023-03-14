@@ -191,32 +191,11 @@ def init_graph():
         )
 
     @print_time
-    def build_graph(entry_meta_list):
+    def build_graph():
         G = nx.DiGraph()
         count = 0
         count_limit = 500
         flag_count_limit_valid = False
-
-        # for i in range(len(entry_meta_list)):
-        #     node_id = entry_meta_list[i]["id"]
-        #     node = unify_select_entry(entry={"id": node_id}, db_name=db_name)[
-        #         0
-        #     ]
-        #     G.add_node(node_id)  # node(type is dict) is unhashable
-        #
-        #     # 判断是否需要添加边
-        #     if "productionGroups" in node and isinstance(
-        #         node["productionGroups"], list
-        #     ):
-        #         for group in node["productionGroups"]:
-        #             if isinstance(group, dict) and "id" in group:
-        #                 target_id = str(group["id"])
-        #                 G.add_edge(str(node["id"]), target_id)
-        #     if (count + 1 % 10) == 0:
-        #         print("导入已进行到" + str(count + 1) + "个")
-        #     count += 1
-        #     if count >= count_limit and flag_count_limit_valid==True:
-        #         break
 
         for code in type_code:
             collection_name = "cngal." + type2collection(code)
@@ -226,35 +205,47 @@ def init_graph():
                 collection_name=collection_name,
             )
             print("loaded: " + collection_name)
-            for doc in collection.find():
-                G.add_node(str(doc["id"]))
+            for node in collection.find():
+                G.add_node(str(node["id"]))
 
-                # productionGroups- 判断是否需要添加边
-                if "productionGroups" in doc and isinstance(
-                    doc["productionGroups"], list
+                # add edge
+
+                # productionGroups
+                if "productionGroups" in node and isinstance(
+                    node["productionGroups"], list
                 ):
-                    for group in doc["productionGroups"]:
+                    for group in node["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(doc["id"]), target_id)
-
-                # publishers
-                if "publishers" in doc and isinstance(
-                    doc["publishers"], list
-                ):
-                    for group in doc["publishers"]:
-                        if isinstance(group, dict) and "id" in group:
-                            target_id = str(group["id"])
-                            G.add_edge(str(doc["id"]), target_id)
+                            G.add_edge(str(node["id"]), target_id)
 
                 # publishers
-                if "roles" in doc and isinstance(
-                    doc["roles"], list
+                if "publishers" in node and isinstance(
+                    node["publishers"], list
                 ):
-                    for group in doc["roles"]:
+                    for group in node["publishers"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(doc["id"]), target_id)
+                            G.add_edge(str(node["id"]), target_id)
+
+                # roles
+                if "roles" in node and isinstance(
+                    node["roles"], list
+                ):
+                    for group in node["roles"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(node["id"]), target_id)
+
+                # entryRelevances
+                if "entryRelevances" in node and isinstance(
+                    node["entryRelevances"], list
+                ):
+                    for group in node["entryRelevances"]:
+                        if isinstance(group, dict) and "id" in group:
+                            target_id = str(group["id"])
+                            G.add_edge(str(node["id"]), target_id)
+
 
                 # shutdown
                 if (count + 1) % 500 == 0:
@@ -279,7 +270,7 @@ def init_graph():
     if not finish_signal:
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
         get_entry_data(entry_meta_list, len(entry_meta_list) + 1)
-    return build_graph(entry_meta_list)  # 缺点：不能联网就不能建图，最好改进cngal.config里缓存一份
+    return build_graph()
 
 
 # def vis_graph(G):
@@ -339,7 +330,7 @@ def vis_graph(G):
             style="filled",
             color="#8c564b",
             fontcolor="white",
-            fontsize="14",
+            fontsize="10",
         )
 
     # 显示有向图
