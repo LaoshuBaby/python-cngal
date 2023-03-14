@@ -2,7 +2,7 @@ from typing import List, Optional
 
 from pymongo import MongoClient
 
-from src.const import type_code
+from pycngal.const import type_code
 
 
 def init_connection():

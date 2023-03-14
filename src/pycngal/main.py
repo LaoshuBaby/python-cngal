@@ -2,11 +2,10 @@ import os
 import time
 from datetime import datetime
 
-import matplotlib.pyplot as plt
 import networkx as nx
 
-from src.const import api_endpoint, db_name, type_code
-from src.database import (
+from pycngal.const import api_endpoint, db_name, type_code
+from pycngal.database import (
     init_collection,
     init_connection,
     insert_entry,
@@ -14,7 +13,7 @@ from src.database import (
     unify_select_entry,
     update_entry,
 )
-from src.network import no_proxy, request_swagger_api
+from pycngal.network import no_proxy, request_swagger_api
 
 
 def type2collection(type: int) -> str:
@@ -389,7 +388,7 @@ def vis_graph(G):
         )
 
     # 显示有向图
-    dot.render(filename="cngal.dot", directory=os.getcwd(), view=True)
+    dot.render(filename="../cngal.dot", directory=os.getcwd(), view=True)
     return dot
 
 
@@ -423,6 +422,8 @@ def analyse_degree_frequency(G):
     # print(in_degrees)
     # print(out_degrees)
 
+def beep():
+    print("CnGal 中文GalGame资料站") # from <title> of https://app.cngal.org/
 
 def main():
     no_proxy(api_endpoint)
