@@ -1,11 +1,10 @@
-import os
 import time
 from datetime import datetime
 
 import networkx as nx
 
-from pycngal.const import api_endpoint, db_name, type_code
-from pycngal.database import (
+from const import db_name, type_code
+from database import (
     init_collection,
     init_connection,
     insert_entry,
@@ -13,11 +12,8 @@ from pycngal.database import (
     unify_select_entry,
     update_entry,
 )
-from pycngal.network import no_proxy, request_swagger_api
-
-
-def type2collection(type: int) -> str:
-    return type_code[type]
+from network import request_swagger_api
+from method import type2collection
 
 
 def print_time(fn):
@@ -73,7 +69,7 @@ def init_graph():
                             entry=entry,
                             db_name=db_name,
                             collection_name="cngal."
-                            + type2collection(entry["type"]),
+                                            + type2collection(entry["type"]),
                         )
 
                     fetch_result = get_data_fetch()
@@ -160,7 +156,7 @@ def init_graph():
                                 content_entry=fetch_result,
                                 db_name=db_name,
                                 collection_name="cngal."
-                                + type2collection(fetch_result["type"]),
+                                                + type2collection(fetch_result["type"]),
                             )  # 事实上应该update
                     else:
                         print("库内不存在" + str(id) + "条目，需要insert")
@@ -364,64 +360,3 @@ def init_graph():
 #     plt.show()
 
 
-def vis_graph(G):
-    import graphviz
-
-    # 创建有向图对象
-    dot = graphviz.Digraph(engine="twopi")
-
-    # 添加节点和边
-    for u, v in G.edges:
-        dot.edge(str(u), str(v))
-
-    # 设置节点属性
-    for node in G.nodes:
-        dot.node(
-            str(node),
-            shape="circle",
-            style="filled,bold",
-            color="#8c564b",
-            fontcolor="white",
-            fontsize="10",
-            height="0.1",  # 调整节点高度
-            width="0.1",  # 调整节点宽度
-        )
-
-    # 显示有向图
-    dot.render(filename="../cngal.dot", directory=os.getcwd(), view=True)
-    return dot
-
-
-def detect_skipped_id(G):
-    x = [int(i) for i in G.nodes()]
-    x.sort()
-    y = []
-    for i in range(min(x), max(x) + 1):
-        if i not in x:
-            y.append(i)
-    return len(x), len(y), min(x), max(x), y
-
-
-def remove_isolated_nodes(G):
-    isolated_nodes = list(nx.isolates(G))
-    for node in isolated_nodes:
-        G.remove_node(node)
-    return G
-
-
-def analyse_degree_frequency(G):
-    graph_hist = nx.degree_histogram(G)
-    in_degrees = nx.in_degree_centrality(G)
-    out_degrees = nx.out_degree_centrality(G)
-    for i in G.nodes():
-        if in_degrees[i] + out_degrees[i] >= 0.8 * len(graph_hist):
-            print(i)
-    print(len(graph_hist))
-    # print(graph_hist)
-
-    # print(in_degrees)
-    # print(out_degrees)
-
-
-def beep():
-    print("CnGal 中文GalGame资料站")  # from <title> of https://app.cngal.org/
