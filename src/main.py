@@ -246,6 +246,20 @@ def init_graph():
                             target_id = str(group["id"])
                             G.add_edge(str(node["id"]), target_id)
 
+                # staffs
+                if "staffs" in node and isinstance(node["staffs"], list):
+                    for staff in node["staffs"]:
+                        if isinstance(staff, dict) and "staffList" in staff and isinstance(
+                                staff["staffList"], list
+                        ):
+                            for item in staff["staffList"]:
+                                if isinstance(item, dict) and "names" in item and isinstance(
+                                        item["names"], list
+                                ):
+                                    for name in item["names"]:
+                                        if isinstance(name, dict) and "id" in name:
+                                            target_id = str(name["id"])
+                                            G.add_edge(str(node["id"]), target_id)
 
                 # shutdown
                 if (count + 1) % 500 == 0:
