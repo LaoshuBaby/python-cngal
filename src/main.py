@@ -196,6 +196,7 @@ def init_graph():
         count = 0
         count_limit = 500
         flag_count_limit_valid = False
+        count_zero_node=0
 
         for code in type_code:
             collection_name = "cngal." + type2collection(code)
@@ -210,6 +211,14 @@ def init_graph():
 
                 # add edge
 
+                # add edge function
+                def add_edge(src,dst,*args, **kwargs):
+                    G.add_edge(src, dst)
+                    if src=="0" or src==0 or dst=="0" or dst==0:
+                        # count_zero_node+=1
+                        print(src, dst, "Create Zero Node",str(kwargs))
+
+
                 # productionGroups
                 if "productionGroups" in node and isinstance(
                     node["productionGroups"], list
@@ -217,7 +226,7 @@ def init_graph():
                     for group in node["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(node["id"]), target_id)
+                            add_edge(str(node["id"]), target_id,tree="productionGroups")
 
                 # publishers
                 if "publishers" in node and isinstance(
@@ -226,7 +235,7 @@ def init_graph():
                     for group in node["publishers"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(node["id"]), target_id)
+                            add_edge(str(node["id"]), target_id,tree="publishers")
 
                 # roles
                 if "roles" in node and isinstance(
@@ -235,7 +244,7 @@ def init_graph():
                     for group in node["roles"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(node["id"]), target_id)
+                            add_edge(str(node["id"]), target_id,"roles")
 
                 # entryRelevances
                 if "entryRelevances" in node and isinstance(
@@ -244,7 +253,7 @@ def init_graph():
                     for group in node["entryRelevances"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            G.add_edge(str(node["id"]), target_id)
+                            add_edge(str(node["id"]), target_id,tree="entryRelevances")
 
                 # staffs
                 if "staffs" in node and isinstance(node["staffs"], list):
@@ -259,7 +268,7 @@ def init_graph():
                                     for name in item["names"]:
                                         if isinstance(name, dict) and "id" in name:
                                             target_id = str(name["id"])
-                                            G.add_edge(str(node["id"]), target_id)
+                                            add_edge(str(node["id"]), target_id,tree="staffs")
 
                 # shutdown
                 if (count + 1) % 500 == 0:
@@ -268,6 +277,7 @@ def init_graph():
                 if count >= count_limit and flag_count_limit_valid == True:
                     break
 
+        print(count_zero_node)
         return G
 
     finish_signal = bool(
@@ -360,11 +370,15 @@ def missing_id_detect(G):
             y.append(i)
     return len(x),len(y),min(x),max(x),y
 
+# def remove_isolated_nodes(G):
 
 def main():
     no_proxy(api_endpoint)
     G = init_graph()
     print(missing_id_detect(G))
+
+
+    exit(0)
     vis_graph(G)
 
 
