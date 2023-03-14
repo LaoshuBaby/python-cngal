@@ -414,7 +414,7 @@ def analyse_degree_frequency(G):
     in_degrees = nx.in_degree_centrality(G)
     out_degrees = nx.out_degree_centrality(G)
     for i in G.nodes():
-        if in_degrees[i]+out_degrees[i]>=0.8*len(graph_hist):
+        if in_degrees[i] + out_degrees[i] >= 0.8 * len(graph_hist):
             print(i)
     print(len(graph_hist))
     # print(graph_hist)
@@ -422,18 +422,6 @@ def analyse_degree_frequency(G):
     # print(in_degrees)
     # print(out_degrees)
 
+
 def beep():
-    print("CnGal 中文GalGame资料站") # from <title> of https://app.cngal.org/
-
-def main():
-    no_proxy(api_endpoint)
-    G = init_graph()
-    G = remove_isolated_nodes(G)
-    # print(detect_skipped_id(G))
-    analyse_degree_frequency(G)
-    exit(0)
-    vis_graph(G)
-
-
-if __name__ == "__main__":
-    main()
+    print("CnGal 中文GalGame资料站")  # from <title> of https://app.cngal.org/
