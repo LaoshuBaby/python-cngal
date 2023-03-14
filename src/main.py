@@ -196,7 +196,7 @@ def init_graph():
         count = 0
         count_limit = 500
         flag_count_limit_valid = False
-        void_entities=[]
+        void_entities = []
 
         for code in type_code:
             collection_name = "cngal." + type2collection(code)
@@ -212,12 +212,11 @@ def init_graph():
                 # add edge
 
                 # add edge function
-                def add_edge(src,dst,*args, **kwargs):
-                    if dst=="0":
+                def add_edge(src, dst, *args, **kwargs):
+                    if dst == "0":
                         void_entities.append([src, dst, kwargs])
                     else:
                         G.add_edge(src, dst)
-
 
                 # productionGroups
                 if "productionGroups" in node and isinstance(
@@ -226,7 +225,12 @@ def init_graph():
                     for group in node["productionGroups"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,key="productionGroups",collection=collection_name)
+                            add_edge(
+                                str(node["id"]),
+                                target_id,
+                                key="productionGroups",
+                                collection=collection_name,
+                            )
 
                 # publishers
                 if "publishers" in node and isinstance(
@@ -235,16 +239,24 @@ def init_graph():
                     for group in node["publishers"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,key="publishers",collection=collection_name)
+                            add_edge(
+                                str(node["id"]),
+                                target_id,
+                                key="publishers",
+                                collection=collection_name,
+                            )
 
                 # roles
-                if "roles" in node and isinstance(
-                    node["roles"], list
-                ):
+                if "roles" in node and isinstance(node["roles"], list):
                     for group in node["roles"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,key="roles",collection=collection_name)
+                            add_edge(
+                                str(node["id"]),
+                                target_id,
+                                key="roles",
+                                collection=collection_name,
+                            )
 
                 # entryRelevances
                 if "entryRelevances" in node and isinstance(
@@ -253,22 +265,39 @@ def init_graph():
                     for group in node["entryRelevances"]:
                         if isinstance(group, dict) and "id" in group:
                             target_id = str(group["id"])
-                            add_edge(str(node["id"]), target_id,key="entryRelevances",collection=collection_name)
+                            add_edge(
+                                str(node["id"]),
+                                target_id,
+                                key="entryRelevances",
+                                collection=collection_name,
+                            )
 
                 # staffs
                 if "staffs" in node and isinstance(node["staffs"], list):
                     for staff in node["staffs"]:
-                        if isinstance(staff, dict) and "staffList" in staff and isinstance(
-                                staff["staffList"], list
+                        if (
+                            isinstance(staff, dict)
+                            and "staffList" in staff
+                            and isinstance(staff["staffList"], list)
                         ):
                             for item in staff["staffList"]:
-                                if isinstance(item, dict) and "names" in item and isinstance(
-                                        item["names"], list
+                                if (
+                                    isinstance(item, dict)
+                                    and "names" in item
+                                    and isinstance(item["names"], list)
                                 ):
                                     for name in item["names"]:
-                                        if isinstance(name, dict) and "id" in name:
+                                        if (
+                                            isinstance(name, dict)
+                                            and "id" in name
+                                        ):
                                             target_id = str(name["id"])
-                                            add_edge(str(node["id"]), target_id,key="staffs",collection=collection_name)
+                                            add_edge(
+                                                str(node["id"]),
+                                                target_id,
+                                                key="staffs",
+                                                collection=collection_name,
+                                            )
 
                 # shutdown
                 if (count + 1) % 500 == 0:
@@ -340,7 +369,7 @@ def vis_graph(G):
     import graphviz
 
     # 创建有向图对象
-    dot = graphviz.Digraph(engine="neato")
+    dot = graphviz.Digraph(engine="twopi")
 
     # 添加节点和边
     for u, v in G.edges:
@@ -351,24 +380,28 @@ def vis_graph(G):
         dot.node(
             str(node),
             shape="circle",
-            style="filled",
+            style="filled,bold",
             color="#8c564b",
             fontcolor="white",
             fontsize="10",
+            height="0.1",  # 调整节点高度
+            width="0.1",  # 调整节点宽度
         )
 
     # 显示有向图
     dot.render(filename="cngal.dot", directory=os.getcwd(), view=True)
     return dot
 
-def missing_id_detect(G):
+
+def detect_skipped_id(G):
     x = [int(i) for i in G.nodes()]
     x.sort()
-    y=[]
+    y = []
     for i in range(min(x), max(x) + 1):
         if i not in x:
             y.append(i)
-    return len(x),len(y),min(x),max(x),y
+    return len(x), len(y), min(x), max(x), y
+
 
 def remove_isolated_nodes(G):
     isolated_nodes = list(nx.isolates(G))
@@ -377,18 +410,27 @@ def remove_isolated_nodes(G):
     return G
 
 
+def analyse_degree_frequency(G):
+    graph_hist = nx.degree_histogram(G)
+    in_degrees = nx.in_degree_centrality(G)
+    out_degrees = nx.out_degree_centrality(G)
+    for i in G.nodes():
+        if in_degrees[i]+out_degrees[i]>=0.8*len(graph_hist):
+            print(i)
+    print(len(graph_hist))
+    # print(graph_hist)
+
+    # print(in_degrees)
+    # print(out_degrees)
+
+
 def main():
     no_proxy(api_endpoint)
     G = init_graph()
-    # graph_hist=nx.degree_histogram(G)
-    # in_degrees = nx.in_degree_centrality(G)
-    # out_degrees = nx.out_degree_centrality(G)
-    # print(graph_hist)
-    # print(in_degrees)
-    # print(out_degrees)
-    G=remove_isolated_nodes(G)
-    # exit(0)
-    # print(missing_id_detect(G))
+    G = remove_isolated_nodes(G)
+    # print(detect_skipped_id(G))
+    analyse_degree_frequency(G)
+    exit(0)
     vis_graph(G)
 
 
