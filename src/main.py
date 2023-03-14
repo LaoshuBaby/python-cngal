@@ -280,8 +280,8 @@ def init_graph():
         )
     )
 
-    entry_meta_list = get_entry_meta_list()
     if not finish_signal:
+        entry_meta_list = get_entry_meta_list()
         print("未检测到数据库完整标记，需要逐个条目检查是否已下载")
         get_entry_data(entry_meta_list, len(entry_meta_list) + 1)
     return build_graph()
@@ -351,10 +351,20 @@ def vis_graph(G):
     dot.render(filename="cngal.dot", directory=os.getcwd(), view=True)
     return dot
 
+def missing_id_detect(G):
+    x = [int(i) for i in G.nodes()]
+    x.sort()
+    y=[]
+    for i in range(min(x), max(x) + 1):
+        if i not in x:
+            y.append(i)
+    return len(x),len(y),min(x),max(x),y
+
 
 def main():
     no_proxy(api_endpoint)
     G = init_graph()
+    print(missing_id_detect(G))
     vis_graph(G)
 
 
