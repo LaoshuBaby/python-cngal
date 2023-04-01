@@ -1,11 +1,10 @@
 import json
 import os
-from pprint import pprint
+from typing import Optional
 
 import requests
 
-from pycngal.const import api_endpoint, headers
-
+from .const import api_endpoint, headers
 
 def no_proxy(domain: str) -> None:
     # If meet with this Error like this:
@@ -34,7 +33,7 @@ def request_api(api_name: str) -> dict:
     )
 
 
-def request_data_summary(tab="games"):
+def request_data_summary(tab="games") -> Optional[dict]:
     if tab == "games":
         url = api_endpoint + "/api/tables/GetBasicInforList"
     elif tab == "group":
@@ -51,9 +50,10 @@ def request_data_summary(tab="games"):
         url = api_endpoint + "/api/tables/GetGameScoreList"
     else:
         print("数据汇总就这些分类没有其他的啦！写BUG了吧！")
-    result_json = json.loads(requests.get(url=url, headers=headers).text)
-    pprint(result_json)
+        return None
+    return json.loads(requests.get(url=url, headers=headers).text)
 
 
 def beep():
     print("CnGal 中文GalGame资料站")  # from <title> of https://app.cngal.org/
+

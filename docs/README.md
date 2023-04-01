@@ -1,0 +1,5 @@
+# For Developer
+
+目前，/src/pycngal 为保证它是一个包，在__init__.py使用了相对导入，因此const前面要加点表示在当前目录。必须在pycngal外从带有__init__.py的目录导入，才能将pycngal视作包。因此单独运行__init__.py来调试将不可行，因为在单独运行某个文件的时候，它自己会被视为单一的名为__init__的包。
+
+目前的单测在/test目录下，通过相对导入和绝对导入均无法对/src下的文件进行导入。在JB的Pycharm中借助_jb_unittest_runner.py可以通过绝对导入来导入包（是模拟test文件的工作目录在ProjectDir，即根目录下），在单独运行test.py的时候无论相对绝对都是行不通的。

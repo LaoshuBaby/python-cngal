@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-cngal"
-version = "0.2.1"
+version = "0.2.2"
 description = "A Python wrapper for cngal.org API"
 authors = ["快乐的老鼠宝宝 <keaitianxinmail@qq.com>"]
 readme = "README.md"
