@@ -4,7 +4,7 @@ from pprint import pprint
 
 import requests
 
-from const import api_endpoint, headers
+from pycngal.const import api_endpoint, headers
 
 
 def no_proxy(domain: str) -> None:
