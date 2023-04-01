@@ -1,4 +1,0 @@
-requests
-networkx
-pymongo
-# optional graphviz-python (or other name?)
