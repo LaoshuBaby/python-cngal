@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "python-cngal"
-version = "0.1.1"
+version = "0.2.0"
 description = "A Python wrapper for cngal.org API"
 authors = ["快乐的老鼠宝宝 <keaitianxinmail@qq.com>"]
 readme = "README.md"
@@ -8,8 +8,7 @@ packages = [{include = "pycngal", from="src"}]
 
 [tool.poetry.dependencies]
 python = "^3.8"
-networkx = "^3.0"
-graphviz = "^0.20.1"
+requests = "^2.28.2"
 
 
 [build-system]
