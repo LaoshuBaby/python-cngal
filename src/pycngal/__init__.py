@@ -14,6 +14,26 @@ def no_proxy(domain: str) -> None:
     os.environ["NO_PROXY"] = domain
 
 
+def request_swagger(format="json") -> Optional[dict]:
+    if format == "json":
+        return json.loads(
+            requests.get(
+                url="https://api.cngal.org/swagger/v1/swagger.json",
+                headers=headers,
+            ).text
+        )
+    elif format == "html":
+        import webbrowser
+
+        webbrowser.open("https://api.cngal.org/swagger/index.html")
+
+
+def request_api(api_name: str) -> dict:
+    return json.loads(
+        requests.get(url=api_endpoint + api_name, headers=headers).text
+    )
+
+
 def request_data_summary(tab="games"):
     if tab == "games":
         url = api_endpoint + "/api/tables/GetBasicInforList"
@@ -33,12 +53,6 @@ def request_data_summary(tab="games"):
         print("数据汇总就这些分类没有其他的啦！写BUG了吧！")
     result_json = json.loads(requests.get(url=url, headers=headers).text)
     pprint(result_json)
-
-
-def request_swagger_api(api_name: str) -> dict:
-    return json.loads(
-        requests.get(url=api_endpoint + api_name, headers=headers).text
-    )
 
 
 def beep():
