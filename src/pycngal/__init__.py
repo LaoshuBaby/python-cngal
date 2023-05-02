@@ -6,12 +6,6 @@ import requests
 
 from .const import api_endpoint, headers
 
-def no_proxy(domain: str) -> None:
-    # If meet with this Error like this:
-    # requests.exceptions.SSLError: HTTPSConnectionPool(host='https://domain', port=443): Max retries exceeded with url:
-    # (Caused by SSLError(SSLEOFError(8, 'EOF occurred in violation of protocol (_ssl.c:997)')))
-    os.environ["NO_PROXY"] = domain
-
 
 def request_swagger(format="json") -> Optional[dict]:
     if format == "json":
@@ -56,4 +50,3 @@ def request_data_summary(tab="games") -> Optional[dict]:
 
 def beep():
     print("CnGal 中文GalGame资料站")  # from <title> of https://app.cngal.org/
-
